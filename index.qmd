@@ -348,17 +348,17 @@ plot_stations()
 
 ### Finding Stations Near a Target Location
 
-Let's say we want to study rainfall at a particular point. We'll use Rice University in Houston as our example:
+Let's say we want to study rainfall at a particular point. We'll use UT Austin in Austin as our example:
 
 ```{julia}
-target_location = "Rice University"  # <1>
-target_lon = -95.404970              # <2>
-target_lat = 29.718952               # <3>
+target_location = "UT Austin"  		 # <1>
+target_lon = -97.760329              # <2>
+target_lat = 30.3203890              # <3>
 ```
 
 1. Descriptive name for our target location (change this for different places!)
-2. Rice University's longitude coordinate (negative means west of Greenwich)
-3. Rice University's latitude coordinate (positive means north of equator)
+2. UT Austin's longitude coordinate (negative means west of Greenwich)
+3. UT Austin's latitude coordinate (positive means north of equator)
 
 
 ### Calculating Distances to Weather Stations
@@ -437,7 +437,7 @@ function plot_time_series(station_row, rainfall_df)
 	# Plot the time series
 	lines!(ax, rainfall_df.date, rainfall_df.rainfall)  # <3>
 	scatter!(ax, rainfall_df.date, rainfall_df.rainfall,  # <4>
-		markersize = 10, marker = :circle, strokewidth = 2, color = :transparent)
+		markersize = 50, marker = :circle, strokewidth = 2, color = :transparent)
 
 	fig
 end
@@ -477,13 +477,13 @@ function plot_nearby_comparison(stations_df, rainfall_data; n_stations = 4)
 		scatter!(ax, rainfall.year, rainfall.rainfall,
 			color = colors[i], markersize = 10)
 	end
-	xlims!(ax, 1950, 2025)
+	xlims!(ax, 2000, 2025)
 
 	axislegend(ax, position = :lt)  # <4>
 	return fig
 end
 
-plot_nearby_comparison(stations, rainfall_data; n_stations = 4)
+plot_nearby_comparison(stations, rainfall_data; n_stations = 3)
 ```
 
 1. Generate evenly-spaced colors from the viridis palette for each station
@@ -500,8 +500,8 @@ Now we'll work with a GEV distribution to create return period plots and compare
 ```{julia}
 # GEV parameters for Houston area (units: inches)
 # Try modifying these values to better fit your data!
-μ = 4.0    # Location parameter - shifts the distribution left/right
-σ = 1.3    # Scale parameter - controls spread (must be > 0)
+μ = 3    # Location parameter - shifts the distribution left/right
+σ = 0.8    # Scale parameter - controls spread (must be > 0)
 ξ = 0.15   # Shape parameter - controls tail behavior
 
 houston_gev = GeneralizedExtremeValue(μ, σ, ξ)  # <1>
@@ -609,13 +609,13 @@ Explore the rainfall data to find one station where there *appears* to be a posi
 
 *Write your answer here. Include the station name/ID and explain what you observe in the data that suggests an increasing trend.*
 
-
+*The weather trend for Rice-university seems to be following a positive trend. While not apparently noticeable, the average of the max-values of the rainfall seem to be increasing for rainfall near Rice University. I also think the major contribution in this shift are a few values of very high rainfall after 1990s, thus moving the average higher.*
 
 **Station with apparent negative trend:**
 
 *Write your answer here. Include the station name/ID and explain what you observe in the data that suggests a decreasing trend.*
 
-
+*In Austin-Camp Mabry (79-0086), there is a duration (1960-1985) where we observe a decline in the average maximum rainfall. This suggests a negative trend; a decrease in the average of the maximum rainfall values.*
 
 ### GEV Parameter Experimentation
 
@@ -624,7 +624,7 @@ Explore the rainfall data to find one station where there *appears* to be a posi
 *Record your starting parameters and the final parameters you chose after experimentation:*
 
 - Starting: $\mu = 4.0$, $\sigma = 1.3$, $\xi = 0.15$
-- Final: $\mu = \ldots$ $\sigma = \ldots$, $\xi = \ldots$
+- Final: $\mu = 3.0$, $\sigma = 0.8$, $\xi = 0.15$
 
 **Parameter Effects:**
 
@@ -632,18 +632,22 @@ Explore the rainfall data to find one station where there *appears* to be a posi
 
 *Test values like $\mu = 2.0, 4.0, 6.0$. Describe how the entire GEV curve shifted and how this affected the fit to your red data points.*
 
+*Increasing the $\mu (6) shifted the GEV curve upwards. The fit got worse and I had to reduce it to 2 and then increase it to 3.*
 
 
 **What happened when you increased/decreased $\sigma$ (scale parameter)?**
 
 *Test values like $\sigma = 0.8, 1.3, 2.0$. Describe how the curve became steeper/flatter and how this affected the spread of return levels.*
 
+*Increasing the $\sigma seemed to increase the right side of values, i.e. increase the values at higher return periods. Reducing it to 0.8 flattened the curve significantly and now it aligns much better with the data.*
 
 
 **What happened when you changed $\xi$ (shape parameter)?** 
 
 *Test $\xi = -0.1$ (light tail), $\xi = 0.0$ (Gumbel), $\xi = 0.15$, $\xi = 0.3$ (heavy tail). Focus on how the high return period end (right side) of the curve changed.*
 
+
+*The $\xi value changed the shape of the curve itself. At positive $\xi, the curve appears to be 'convex up' at higher return periods and during negative $\xi, its 'concave down' at higher return periods.*
 
 
 **Final Assessment:**
@@ -652,11 +656,14 @@ Explore the rainfall data to find one station where there *appears* to be a posi
 
 *Do the red dots follow your blue curve? Where are the biggest deviations?*
 
+*The biggest deviations are the points with low return values. Manually fitting, they are quite difficult to fit. Given the curve is plotted in logarithmic x-axis, the points with lower return values also appears to be a large cluster of points not being fit well.* 
 
 
 **Additional observations:**
 
 *Optional: Add any other interesting patterns you notice in the return period analysis.*
+
+*The initial region of the curve seems to be concave upward no matter what parameter is changed. I believe it is simply an artifact of the log scale on the x axis.*
 
 
 
